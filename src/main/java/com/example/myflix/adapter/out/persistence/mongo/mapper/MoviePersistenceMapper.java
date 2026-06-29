@@ -10,7 +10,7 @@ public class MoviePersistenceMapper {
         document.setId(movie.getId());
         document.setTitle(movie.getTitle());
         document.setDescription(movie.getDescription());
-        document.setGenre(movie.getGenre());
+        document.setGenres(movie.getGenres());
         document.setReleaseYear(movie.getReleaseYear());
         document.setCreatedAt(movie.getCreatedAt());
 
@@ -22,7 +22,7 @@ public class MoviePersistenceMapper {
                 document.getId(),
                 document.getTitle(),
                 document.getDescription(),
-                document.getGenre(),
+                document.getGenres(),
                 document.getReleaseYear(),
                 document.getCreatedAt()
         );

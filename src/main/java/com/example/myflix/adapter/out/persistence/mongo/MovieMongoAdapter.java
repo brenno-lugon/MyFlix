@@ -40,6 +40,37 @@ public class MovieMongoAdapter implements MovieRepositoryOutputPort {
 
     @Override
     public List<Movie> findAll() {
-        return List.of();
+        return springDataMovieRepository.findAll()
+                .stream()
+                .map(MoviePersistenceMapper::toDomain)
+                .toList();
     }
+
+    @Override
+    public List<Movie> searchMovies(String title) {
+        return springDataMovieRepository.findByTitleContainingIgnoreCase(title)
+                .stream()
+                .map(MoviePersistenceMapper::toDomain)
+                .toList();
+    }
+
+    @Override
+    public void deleteById(String id) {
+        springDataMovieRepository.deleteById(id);
+    }
+
+    @Override
+    public List<Movie> findAllById(List<String> ids) {
+        List<MovieDocument> movieDocuments = springDataMovieRepository.findAllById(ids);
+        return movieDocuments.stream()
+                .map(MoviePersistenceMapper::toDomain)
+                .toList();
+    }
+
+    @Override
+    public boolean existsById(String id) {
+        return springDataMovieRepository.existsById(id);
+    }
+
+
 }

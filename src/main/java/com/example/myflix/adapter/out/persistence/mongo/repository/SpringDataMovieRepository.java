@@ -9,4 +9,5 @@ public interface SpringDataMovieRepository extends MongoRepository<MovieDocument
     boolean existsByTitleIgnoreCase(String title);
 
     List<MovieDocument> findByTitleContainingIgnoreCase(String title);
+
 }

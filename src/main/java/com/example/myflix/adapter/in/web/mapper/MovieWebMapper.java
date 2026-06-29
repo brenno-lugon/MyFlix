@@ -9,7 +9,7 @@ public class MovieWebMapper {
         return Movie.create(
                 request.title(),
                 request.description(),
-                request.genre(),
+                request.genres(),
                 request.releaseYear()
         );
     }
@@ -19,7 +19,7 @@ public class MovieWebMapper {
                 movie.getId(),
                 movie.getTitle(),
                 movie.getDescription(),
-                movie.getGenre(),
+                movie.getGenres(),
                 movie.getReleaseYear(),
                 movie.getCreatedAt()
         );

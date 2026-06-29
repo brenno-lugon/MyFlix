@@ -9,7 +9,11 @@ public interface MovieUseCase {
 
     List<Movie> findAll();
 
-    List<Movie> searchByTitle(String title);
+    List<Movie> searchMovies(String title);
 
     Movie findById(String id);
+
+    void delete(String id);
+
+    Movie update(String id, Movie movie);
 }

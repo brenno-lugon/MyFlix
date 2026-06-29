@@ -13,4 +13,12 @@ public interface MovieRepositoryOutputPort {
     Optional<Movie> findById(String id);
 
     List<Movie> findAll();
+
+    List<Movie> searchMovies(String title);
+
+    boolean existsById(String id);
+
+    void deleteById(String id);
+
+    List<Movie> findAllById(List<String> movieIds);
 }

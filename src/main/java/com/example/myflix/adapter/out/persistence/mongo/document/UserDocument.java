@@ -9,14 +9,11 @@ import java.time.LocalDateTime;
 
 @Getter
 @Setter
-@Document(collection = "movies")
-public class MovieDocument {
+@Document(collection = "user")
+public class UserDocument {
 
     @Id
     private String id;
-    private String title;
-    private String description;
-    private String genres;
-    private Integer releaseYear;
+    private String name;
     private LocalDateTime createdAt;
 }

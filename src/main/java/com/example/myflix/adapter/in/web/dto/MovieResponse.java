@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 public record MovieResponse(String id,
                             String title,
                             String description,
-                            String genre,
+                            String genres,
                             Integer releaseYear,
                             LocalDateTime createdAt) {
 }
