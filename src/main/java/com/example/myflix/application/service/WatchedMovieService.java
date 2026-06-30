@@ -1,28 +1,36 @@
 package com.example.myflix.application.service;
 
-import com.example.myflix.application.usecase.WatchedMovieUseCase;
-import com.example.myflix.model.*;
-import com.example.myflix.out.MovieRepositoryOutputPort;
-import com.example.myflix.out.UserRepositoryOutputPort;
-import com.example.myflix.out.WatchedMovieRepositoryOutputPort;
-import domain.exception.WatchedMovieException;
+import com.example.myflix.domain.event.MovieWatchedEvent;
+import com.example.myflix.domain.model.*;
+import com.example.myflix.domain.port.in.WatchedMovieUseCase;
+import com.example.myflix.domain.port.out.MovieRepository;
+import com.example.myflix.domain.port.out.UserRepository;
+import com.example.myflix.domain.port.out.WatchedMovieRepository;
+import com.example.myflix.infrastructure.kafka.MovieWatchedEventPublisher;
+import com.example.myflix.infrastructure.web.exception.MovieException;
+import com.example.myflix.infrastructure.web.exception.UserException;
+import com.example.myflix.infrastructure.web.exception.WatchedMovieException;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
 public class WatchedMovieService implements WatchedMovieUseCase {
 
-    private final WatchedMovieRepositoryOutputPort watchedMovieRepositoryOutputPort;
-    private final MovieRepositoryOutputPort movieRepositoryOutputPort;
-    private final UserRepositoryOutputPort userRepositoryOutputPort;
+    private final WatchedMovieRepository watchedMovieRepository;
+    private final MovieRepository movieRepository;
+    private final UserRepository userRepository;
+    private final MovieWatchedEventPublisher publisher;
 
-    public WatchedMovieService(WatchedMovieRepositoryOutputPort watchedMovieRepositoryOutputPort, MovieRepositoryOutputPort movieRepositoryOutputPort, UserRepositoryOutputPort userRepositoryOutputPort) {
-        this.watchedMovieRepositoryOutputPort = watchedMovieRepositoryOutputPort;
-        this.movieRepositoryOutputPort = movieRepositoryOutputPort;
-        this.userRepositoryOutputPort = userRepositoryOutputPort;
+    public WatchedMovieService(WatchedMovieRepository watchedMovieRepository, MovieRepository movieRepository, UserRepository userRepository, MovieWatchedEventPublisher publisher) {
+        this.watchedMovieRepository = watchedMovieRepository;
+        this.movieRepository = movieRepository;
+        this.userRepository = userRepository;
+        this.publisher = publisher;
     }
 
     @Override
@@ -34,20 +42,39 @@ public class WatchedMovieService implements WatchedMovieUseCase {
             throw WatchedMovieException.isMandatory("Id do Filme");
         }
 
-        return watchedMovieRepositoryOutputPort.save(watchedMovie);
+        WatchedMovie saved = watchedMovieRepository.save(watchedMovie);
+
+        Movie movie = movieRepository.findById(watchedMovie.getMovieId())
+                .orElseThrow(() -> MovieException.notFound("Filme"));
+        User user = userRepository.findById(watchedMovie.getUserId())
+                .orElseThrow(() -> UserException.notFound("Filme"));
+
+        MovieWatchedEvent event = new MovieWatchedEvent(
+                UUID.randomUUID(),
+                LocalDateTime.now(),
+                saved.getUserId(),
+                user.getName(),
+                saved.getMovieId(),
+                movie.getTitle(),
+                saved.getWatchedAt()
+        );
+
+        publisher.publish(event);
+
+        return saved;
     }
 
     @Override
     public List<MovieViewedByUser> findMoviesWatchedByUser(String userId) {
 
         List<WatchedMovie> watchedList =
-                watchedMovieRepositoryOutputPort.findByUserId(userId);
+                watchedMovieRepository.findByUserId(userId);
 
         List<String> movieIds = watchedList.stream()
                 .map(WatchedMovie::getMovieId)
                 .toList();
 
-        List<Movie> movies = movieRepositoryOutputPort.findAllById(movieIds);
+        List<Movie> movies = movieRepository.findAllById(movieIds);
 
         Map<String, Movie> movieMap = movies.stream()
                 .collect(Collectors.toMap(Movie::getId, movie -> movie));
@@ -68,13 +95,13 @@ public class WatchedMovieService implements WatchedMovieUseCase {
     public List<UserWatchedMovie> findUsersWhoWatchMovie(String movieId) {
 
         List<WatchedMovie> watchedList =
-                watchedMovieRepositoryOutputPort.findByMovieId(movieId);
+                watchedMovieRepository.findByMovieId(movieId);
 
         List<String> userIds = watchedList.stream()
                 .map(WatchedMovie::getUserId)
                 .toList();
 
-        List<User> users = userRepositoryOutputPort.findAllById(userIds);
+        List<User> users = userRepository.findAllById(userIds);
 
         Map<String, User> userMap = users.stream()
                 .collect(Collectors.toMap(User::getId, user -> user));

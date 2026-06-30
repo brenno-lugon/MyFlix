@@ -1,9 +1,9 @@
 package com.example.myflix.application.service;
 
-import com.example.myflix.application.usecase.UserUseCase;
-import com.example.myflix.model.User;
-import com.example.myflix.out.UserRepositoryOutputPort;
-import domain.exception.UserException;
+import com.example.myflix.domain.model.User;
+import com.example.myflix.domain.port.in.UserUseCase;
+import com.example.myflix.domain.port.out.UserRepository;
+import com.example.myflix.infrastructure.web.exception.UserException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -11,23 +11,23 @@ import java.util.List;
 @Service
 public class UserService implements UserUseCase {
 
-    private final UserRepositoryOutputPort userRepositoryOutputPort;
+    private final UserRepository userRepository;
 
-    public UserService(UserRepositoryOutputPort userRepositoryOutputPort) {
-        this.userRepositoryOutputPort = userRepositoryOutputPort;
+    public UserService(UserRepository userRepository) {
+        this.userRepository = userRepository;
     }
 
     @Override
     public User create(User user) {
-        if (userRepositoryOutputPort.existsByNameIgnoreCase(user.getName())) {
+        if (userRepository.existsByNameIgnoreCase(user.getName())) {
             throw UserException.alreadyExists(user.getName());
         }
-        return userRepositoryOutputPort.save(user);
+        return userRepository.save(user);
     }
 
     @Override
     public List<User> findAll() {
-        return userRepositoryOutputPort.findAll();
+        return userRepository.findAll();
     }
 
 }

@@ -1,9 +1,9 @@
 package com.example.myflix.application.service;
 
-import com.example.myflix.application.usecase.MovieUseCase;
-import com.example.myflix.model.Movie;
-import com.example.myflix.out.MovieRepositoryOutputPort;
-import domain.exception.MovieException;
+import com.example.myflix.domain.model.Movie;
+import com.example.myflix.domain.port.in.MovieUseCase;
+import com.example.myflix.domain.port.out.MovieRepository;
+import com.example.myflix.infrastructure.web.exception.MovieException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -11,10 +11,10 @@ import java.util.List;
 @Service
 public class MovieService implements MovieUseCase {
 
-    private final MovieRepositoryOutputPort movieRepositoryOutputPort;
+    private final MovieRepository movieRepository;
 
-    public MovieService(MovieRepositoryOutputPort movieRepositoryOutputPort) {
-        this.movieRepositoryOutputPort = movieRepositoryOutputPort;
+    public MovieService(MovieRepository movieRepository) {
+        this.movieRepository = movieRepository;
     }
 
     @Override
@@ -32,38 +32,38 @@ public class MovieService implements MovieUseCase {
             throw MovieException.invalidReleaseYear(movie.getReleaseYear());
         }
 
-        if (movieRepositoryOutputPort.existsByTitleIgnoreCase(movie.getTitle())) {
+        if (movieRepository.existsByTitleIgnoreCase(movie.getTitle())) {
             throw MovieException.alreadyExists(movie.getTitle());
         }
-        return movieRepositoryOutputPort.save(movie);
+        return movieRepository.save(movie);
     }
 
     @Override
     public List<Movie> findAll() {
-        return movieRepositoryOutputPort.findAll();
+        return movieRepository.findAll();
     }
 
     @Override
     public List<Movie> searchMovies(String title) {
-        return movieRepositoryOutputPort.searchMovies(title);
+        return movieRepository.searchMovies(title);
     }
 
     @Override
     public Movie findById(String id) {
-        return movieRepositoryOutputPort.findById(id).orElse(null);
+        return movieRepository.findById(id).orElse(null);
     }
 
     @Override
     public void delete(String id) {
-        if (!movieRepositoryOutputPort.existsById(id)) {
+        if (!movieRepository.existsById(id)) {
             throw MovieException.notFound(id);
         }
-        movieRepositoryOutputPort.deleteById(id);
+        movieRepository.deleteById(id);
     }
 
     @Override
     public Movie update(String id, Movie movie) {
-        Movie existingMovie = movieRepositoryOutputPort.findById(id)
+        Movie existingMovie = movieRepository.findById(id)
                 .orElseThrow(() -> MovieException.notFound(id));
 
         if (movie.getTitle() != null && !movie.getTitle().isEmpty()) {
@@ -71,7 +71,7 @@ public class MovieService implements MovieUseCase {
                     .equalsIgnoreCase(existingMovie.getTitle());
 
             if (titleChanged &&
-                    movieRepositoryOutputPort.existsByTitleIgnoreCase(movie.getTitle())) {
+                    movieRepository.existsByTitleIgnoreCase(movie.getTitle())) {
                 throw MovieException.alreadyExists(movie.getTitle());
             }
             existingMovie.setTitle(movie.getTitle());
@@ -86,7 +86,7 @@ public class MovieService implements MovieUseCase {
             existingMovie.setReleaseYear(movie.getReleaseYear());
         }
 
-        return movieRepositoryOutputPort.save(existingMovie);
+        return movieRepository.save(existingMovie);
     }
 
 }

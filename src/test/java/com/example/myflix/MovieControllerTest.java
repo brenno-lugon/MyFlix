@@ -1,8 +1,8 @@
 package com.example.myflix;
 
-import com.example.myflix.adapter.in.web.MovieController;
-import com.example.myflix.application.usecase.MovieUseCase;
-import com.example.myflix.model.Movie;
+import com.example.myflix.domain.model.Movie;
+import com.example.myflix.domain.port.in.MovieUseCase;
+import com.example.myflix.infrastructure.web.controller.MovieController;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
